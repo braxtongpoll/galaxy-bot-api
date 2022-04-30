@@ -1,0 +1,14 @@
+{
+    "domain": "http://localhost:3001",
+    "port": 3001,
+    "sql": {
+        "host": "localhost",
+        "user": "root",
+        "password": "",
+        "database": "devAPI"
+    },
+    "discord": {
+        "oauthId": "",
+        "oauthToken": ""
+    }
+}

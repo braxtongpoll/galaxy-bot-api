@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<title>Ticket Log</title>
+<meta charset="utf-8">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<meta name="description" content=<%= "Ticket from " + data.openedBy + " at " + data.dateClosed %>/>
+<meta property="og:title" content=<%= "Ticket - " + data.openedBy %> />
+<meta property="og:type" content="website" />
+<meta property="og:description" content=<%= "Ticket from " + data.openedBy + " at " + data.dateClosed %> />
+<link href="https://fonts.googleapis.com/css?family=Arimo:700,700italic,900,900italic%7CAsap:400,400italic,700,700italic" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" href="<%=config.domain%>/main.css">
+</head>
+<body>
+<div id="wrapper">
+<div id="main">
+<div class="inner">
+<h1 id="text01">Archive - <%= data.ticketID %></h1>
+<p id="text03"><span><strong>Ticket ID:</strong> <code><%= data.ticketID %></code></span><br /><br /><span><strong><span style="color: #f1c40d">Archive Details:</span></strong>
+</span><br /><span>
+    <span style="color: #3398DB">Panel</span>: <code><%= data.panel %></code></span><br />
+    <span><span style="color: #3398DB">Archived By</span>: <code><%= data.archivedBy %></code></span><br />
+    <span><span style="color: #3398DB">Opened By</span>: <code><%= data.openedBy %></code></span><br />
+    <span><span style="color: #3398DB">Date Archived</span>: <code><%= data.dateArchived %></code></span><br />
+</p><hr id="divider02">
+<% data.data.forEach(msg => { %>
+    <% let messages = msg.message.split("/br"); %>
+    <h2 id="text04">
+        <img style="width: 2.8em; height: 2.8em; display: inline-block; margin-right: 1em; border-radius: 50%; vertical-align: middle;" src=<%= msg.author.iconURL %>><span style="font-size: .9em;"><%= msg.author.name %> (<code style="font-size: .65em; vertical-align: middle;"><%= msg.author.ID %></code>)</span>
+    </h2>
+    <% messages.forEach(message => { %>
+        <p id="text02" style="margin-left: 5.4em;"><%= message %></p><hr id="divider02">
+    <% }) %>
+<% }) %>
+
+
+<p id="text03">Archive logging system created by <a href="https://plutosworld.net">Pluto's World</a> & <a href="https://faxes.zone">FAXES Weblutions®</a></p>

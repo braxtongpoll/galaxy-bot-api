@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<title>Application Log</title>
+<meta charset="utf-8">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<meta name="description" content="Application from <%= data.applicant %> at <%= data.dateSubmitted %>" />
+<meta property="og:title" content="Application - <%= data.applicant %>" />
+<meta property="og:type" content="website" />
+<meta property="og:description" content="Application from <%= data.applicant %> at <%= data.dateSubmitted %>" />
+<link href="https://fonts.googleapis.com/css?family=Arimo:700,700italic,900,900italic%7CAsap:400,400italic,700,700italic" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" href="<%=config.domain%>/main.css">
+</head>
+<body>
+<div id="wrapper">
+    <div id="main">
+        <div class="inner">
+            <h1 id="text01">Application - <%= data.applicant %></h1>
+            <p id="text03"><span><strong>Application ID:</strong> <code><%= data.applicationID %></code></span><br /><br /><span><strong><span style="color: #f1c40d">Application Details:</span></strong>
+                </span><br /><span><span style="color: #3398DB">Application</span>: <code><%= data.panel %></code></span><br /><span><span style="color: #3398DB">Date Submitted</span>: <code><%= data.dateSubmitted %></code></span><br /><span><span style="color: #3398DB">User ID</span>: <code><%= data.applicantID %></code></span><br /><span><span style="color: #3398DB">Time Taken</span>: <code><%= data.timeTaken %></code></span><br />
+            </p>
+<hr id="divider02">
+    <% for(let i = 0; i < data.data.questions.length; i++) { %>
+        <h2 id="text04"><%= data.data.questions[i] %></h2>
+        <p id="text02"><%= data.data.answers[i] %></p>
+        <hr id="divider01">
+    <% } %>
+<p id="text03">Application logging system created by <a href="https://plutosworld.net">Pluto's World</a> & <a href="https://faxes.zone">FAXES Weblutions®</a></p>
