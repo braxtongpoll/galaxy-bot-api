@@ -120,7 +120,7 @@ app.post("/updateall/:guild", async function(req, res) {
 
 app.post("/uploadTicket/:guild", async function(req, res) {
     let auth = req.headers.authorization;
-    if (auth !== "0cor1A1EIZbMXIRMwyjnLXJ-fUaICv2U") return res.send(false);
+    if (auth !== config.secret) return res.send(false);
     let guild = req.params.guild.replace("'", "''");
     let data = req?.query?.data;
     if (!guild || !data) return res.send(false);
@@ -154,7 +154,7 @@ app.get("/ticket/:id", async function(req, res) {
 
 app.post("/uploadTranscript/:guild", async function(req, res) {
     let auth = req.headers.authorization;
-    if (auth !== "0cor1A1EIZbMXIRMwyjnLXJ-fUaICv2U") return res.send(false);
+    if (auth !== config.secret) return res.send(false);
     let guild = req.params.guild.replace("'", "''");
     let data = req?.query?.data;
     if (!guild || !data) return res.send(false);
@@ -188,7 +188,7 @@ app.get("/archive/:id", async function(req, res) {
 
 app.post("/uploadApplication/:guild", async function(req, res) {
     let auth = req.headers.authorization;
-    if (auth !== "0cor1A1EIZbMXIRMwyjnLXJ-fUaICv2U") return res.send(false);
+    if (auth !== config.secret) return res.send(false);
     let guild = req.params.guild.replace("'", "''");
     let data = req?.query?.data;
     if (!guild || !data) return res.send(false);
@@ -219,7 +219,7 @@ app.get("/application/:id", async function(req, res) {
 
 app.post("/uploadPrune/:guild", async function(req, res) {
     let auth = req.headers.authorization;
-    if (auth !== "0cor1A1EIZbMXIRMwyjnLXJ-fUaICv2U") return res.send(false);
+    if (auth !== config.secret) return res.send(false);
     let guild = req.params.guild.replace("'", "''");
     let data = req?.query?.data;
     if (!guild || !data) return res.send(false);
