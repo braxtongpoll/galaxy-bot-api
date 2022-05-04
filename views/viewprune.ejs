@@ -25,7 +25,7 @@
 <% data.data.forEach(msg => { %>
     <% let messages = msg.message.split("/br"); %>
     <h2 id="text04">
-        <span style="font-size: .9em;"><%= msg.author.name %> (<code style="font-size: .65em; vertical-align: middle;"><%= msg.author.ID %></code>)</span>
+        <img style="width: 2.8em; height: 2.8em; display: inline-block; margin-right: 1em; border-radius: 50%; vertical-align: middle;" src=<%= users[msg.author].iconURL %>><span style="font-size: .9em;"><%= users[msg.author].username %> (<code style="font-size: .65em; vertical-align: middle;"><%= msg.author %></code>)</span>
     </h2>
     <% messages.forEach(message => { %>
         <p id="text02" style="margin-left: 5.4em;"><%= message %></p><hr id="divider02">

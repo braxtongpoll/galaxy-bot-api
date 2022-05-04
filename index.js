@@ -125,13 +125,7 @@ app.post("/uploadTicket/:guild", async function(req, res) {
     let data = req?.query?.data;
     if (!guild || !data) return res.send(false);
     data = JSON.parse(data, "utf-8");
-    let users = JSON.parse(req.query.users, "utf-8");
     let permUsers = req.query.permUsers || "";
-    for (let i = 0; i < data.data.length; i++) {
-        let userID = data.data[i].author;
-        data.data[i].author = users[userID] || {};
-        data.data[i].author.ID = userID;
-    };
     connection.query(`INSERT INTO tickets (guild, data, panel, claimedBy, closedBy, openedBy, openerId, dateClosed, ticketID, users) VALUES ('${guild}', '${JSON.stringify(data.data)}', '${data.panel}' , '${data.claimedBy}', '${data.closedBy}', '${data.openedBy}', '${data.openerId}', '${data.dateClosed}', '${data.ticketID}', '${permUsers}');`, (err, result) => {
         res.send(String(result.insertId));
     });
@@ -142,9 +136,19 @@ app.get("/ticket/:id", async function(req, res) {
     if(!id) return res.send(false);
     if(req.isAuthenticated()) {
         connection.query(`SELECT * FROM tickets WHERE id = ${Number(id)};`, function(err, result) {
-            if(!result[0].users.split(',').includes(req.user.id)) return res.redirect(`https://plutos.world/error?err=You don't have access to view this page.`)
-            result[0].data = JSON.parse(result[0].data, "utf-8");
-            if (result.length) res.render("viewticket", { data: result[0], config: config })
+            connection.query(`SELECT * FROM users;`, function(err, foundUsers) {
+                if(!result[0].users.split(',').includes(req.user.id)) return res.redirect(`https://plutos.world/error?err=You don't have access to view this page.`)
+                result[0].data = JSON.parse(result[0].data, "utf-8");
+                let userData = {};
+                for (let user of foundUsers) {
+                    userData[user.user] = {
+                        username: user.username,
+                        tag: user.tag,
+                        iconURL: user.icon
+                    };
+                };
+                if (result.length) res.render("viewticket", { data: result[0], config: config, users: userData });
+            });
         });
     } else {
         req.session.loginRef = req.path;
@@ -159,14 +163,9 @@ app.post("/uploadTranscript/:guild", async function(req, res) {
     let data = req?.query?.data;
     if (!guild || !data) return res.send(false);
     data = JSON.parse(data, "utf-8");
-    let users = JSON.parse(req.query.users, "utf-8");
-    let permUsers = JSON.parse(req.query.permUsers, "utf-8") || [];
-    for (let i = 0; i < data.data.length; i++) {
-        let userID = data.data[i].author;
-        data.data[i].author = users[userID] || {};
-        data.data[i].author.ID = userID;
-    };
-    connection.query(`INSERT INTO transcripts (guild, data, panel, archivedBy, openedBy, ticketID, dateArchived, users) VALUES ('${guild}', '${JSON.stringify(data.data)}', '${data.panel}' , '${data.archivedBy}', '${data.openedBy}', '${data.ticketID}', '${data.dateArchived}', '${permUsers.join(",")}');`, (err, result) => {
+    let permUsers = req.query.permUsers || "";
+    connection.query(`INSERT INTO transcripts (guild, data, panel, archivedBy, openedBy, ticketID, dateArchived, users) VALUES ('${guild}', '${JSON.stringify(data.data)}', '${data.panel}' , '${data.archivedBy}', '${data.openedBy}', '${data.ticketID}', '${data.dateArchived}', '${permUsers}');`, (err, result) => {
+        if (err) throw err;
         res.send(String(result.insertId));
     });
 });
@@ -174,11 +173,21 @@ app.post("/uploadTranscript/:guild", async function(req, res) {
 app.get("/archive/:id", async function(req, res) {
     let id = req.params.id;
     if(!id) return res.send(false);
-    if(req.isAuthenticated()) {
+    if (req.isAuthenticated()) {
         connection.query(`SELECT * FROM transcripts WHERE id = ${Number(id)};`, function(err, result) {
-            if(!result[0].users.split(',').includes(req.user.id)) return res.redirect(`https://plutos.world/error?err=You don't have access to view this page.`)
-            result[0].data = JSON.parse(result[0].data, "utf-8");
-            if (result.length) res.render("viewtranscript", { data: result[0], config: config })
+            connection.query(`SELECT * FROM users;`, function(err, foundUsers) {
+                if(!result[0].users.split(',').includes(req.user.id)) return res.redirect(`https://plutos.world/error?err=You don't have access to view this page.`)
+                result[0].data = JSON.parse(result[0].data, "utf-8");
+                let userData = {};
+                for (let user of foundUsers) {
+                    userData[user.user] = {
+                        username: user.username,
+                        tag: user.tag,
+                        iconURL: user.icon
+                    };
+                };
+                if (result.length) res.render("viewtranscript", { data: result[0], config: config, users: userData });
+            })
         });
     } else {
         req.session.loginRef = req.path;
@@ -205,7 +214,7 @@ app.post("/uploadApplication/:guild", async function(req, res) {
 app.get("/application/:id", async function(req, res) {
     let id = req.params.id;
     if (!id) return res.send(false);
-    if(req.isAuthenticated()) {
+    if (req.isAuthenticated()) {
         connection.query(`SELECT * FROM applications WHERE id = ${Number(id)};`, function(err, result) {
             if(!result[0].users.split(',').includes(req.user.id)) return res.redirect(`https://plutos.world/error?err=You don't have access to view this page.`)
             result[0].data = JSON.parse(result[0].data, "utf-8");
@@ -224,12 +233,6 @@ app.post("/uploadPrune/:guild", async function(req, res) {
     let data = req?.query?.data;
     if (!guild || !data) return res.send(false);
     data = JSON.parse(data, "utf-8");
-    let users = JSON.parse(req.query.users, "utf-8");
-    for (let i = 0; i < data.data.length; i++) {
-        let userID = data.data[i].author;
-        data.data[i].author = users[userID] || {};
-        data.data[i].author.ID = userID;
-    };
     connection.query(`INSERT INTO prunes (guild, data, dateClosed, prunedBy, users) VALUES ('${guild}', '${JSON.stringify(data.data)}', '${data.dateClosed}', '${data.prunedBy}', '${req.query.permUsers}');`, (err, result) => {
         res.send(String(result.insertId));
     });
@@ -240,14 +243,42 @@ app.get("/prune/:id", async function(req, res) {
     if (!id) return res.send(false);
     if(req.isAuthenticated()) {
         connection.query(`SELECT * FROM prunes WHERE id = ${Number(id)};`, function(err, result) {
-            if(!result[0].users.split(',').includes(req.user.id)) return res.redirect(`https://plutos.world/error?err=You don't have access to view this page.`)
-            result[0].data = JSON.parse(result[0].data, "utf-8");
-            if (result.length) res.render("viewprune", { data: result[0], config: config })
+            connection.query(`SELECT * FROM users;`, function(err, foundUsers) {
+                if(!result[0].users.split(',').includes(req.user.id)) return res.redirect(`https://plutos.world/error?err=You don't have access to view this page.`)
+                result[0].data = JSON.parse(result[0].data, "utf-8");
+                let userData = {};
+                for (let user of foundUsers) {
+                    userData[user.user] = {
+                        username: user.username,
+                        tag: user.tag,
+                        iconURL: user.icon
+                    };
+                };
+                if (result.length) res.render("viewprune", { data: result[0], config: config, users: userData })
+            });
         });
     } else {
         req.session.loginRef = req.path;
         res.redirect('/auth/discord');
     }
+});
+
+app.post("/sendUsers", async function(req, res) {
+    let users;
+    try {users = JSON.parse(req.query.users, "utf-8");} catch {};
+    if (!users) return res.send(false);
+    res.send(true);
+    for (let user of users) {
+        connection.query(`SELECT * FROM users WHERE user = '${user.id}';`, function(err, result) {
+            if (!result?.length) {
+                connection.query(`INSERT INTO users (user, username, tag, icon) VALUES ('${user.id}', '${user.username}', '${user.tag}', '${user.icon}');`, () => {});
+            } else {
+                if (result[0].username !== user.username || result[0].tag !== user.tag || result[0].icon !== user.icon) {
+                    connection.query(`UPDATE users SET username = '${user.username}', tag = '${user.tag}', icon = '${user.icon}' WHERE id = ${result[0].id};`, () => {});
+                }
+            }
+        });
+    };
 });
 
 process.on("uncaughtException", (err) => {console.log(err.stack)});
