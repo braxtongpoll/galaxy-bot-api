@@ -160,13 +160,13 @@ app.post("/uploadTranscript/:guild", async function(req, res) {
     if (!guild || !data) return res.send(false);
     data = JSON.parse(data, "utf-8");
     let users = JSON.parse(req.query.users, "utf-8");
-    let permUsers = JSON.parse(req.query.permUsers, "utf-8") || [];
+    let permUsers = req.query.permUsers || "";
     for (let i = 0; i < data.data.length; i++) {
         let userID = data.data[i].author;
         data.data[i].author = users[userID] || {};
         data.data[i].author.ID = userID;
     };
-    connection.query(`INSERT INTO transcripts (guild, data, panel, archivedBy, openedBy, ticketID, dateArchived, users) VALUES ('${guild}', '${JSON.stringify(data.data)}', '${data.panel}' , '${data.archivedBy}', '${data.openedBy}', '${data.ticketID}', '${data.dateArchived}', '${permUsers.join(",")}');`, (err, result) => {
+    connection.query(`INSERT INTO transcripts (guild, data, panel, archivedBy, openedBy, ticketID, dateArchived, users) VALUES ('${guild}', '${JSON.stringify(data.data)}', '${data.panel}' , '${data.archivedBy}', '${data.openedBy}', '${data.ticketID}', '${data.dateArchived}', '${permUsers}');`, (err, result) => {
         res.send(String(result.insertId));
     });
 });
