@@ -126,8 +126,9 @@ app.post("/uploadTicket/:guild", async function(req, res) {
     if (!guild || !data) return res.send(false);
     data = JSON.parse(data, "utf-8");
     let permUsers = req.query.permUsers || "";
-    connection.query(`INSERT INTO tickets (guild, data, panel, claimedBy, closedBy, openedBy, openerId, dateClosed, ticketID, users) VALUES ('${guild}', '${JSON.stringify(data.data)}', '${data.panel}' , '${data.claimedBy}', '${data.closedBy}', '${data.openedBy}', '${data.openerId}', '${data.dateClosed}', '${data.ticketID}', '${permUsers}');`, (err, result) => {
+    connection.query(`INSERT INTO tickets (guild, panel, claimedBy, closedBy, openedBy, openerId, dateClosed, ticketID, users) VALUES ('${guild}', '${data.panel}' , '${data.claimedBy}', '${data.closedBy}', '${data.openedBy}', '${data.openerId}', '${data.dateClosed}', '${data.ticketID}', '${permUsers}');`, (err, result) => {
         res.send(String(result.insertId));
+        connection.query(`UPDATE tickets SET data = ?`, [JSON.stringify(data.data)], function(err ,res) {});
     });
 });
 
@@ -164,9 +165,10 @@ app.post("/uploadTranscript/:guild", async function(req, res) {
     if (!guild || !data) return res.send(false);
     data = JSON.parse(data, "utf-8");
     let permUsers = req.query.permUsers || "";
-    connection.query(`INSERT INTO transcripts (guild, data, panel, archivedBy, openedBy, ticketID, dateArchived, users) VALUES ('${guild}', '${JSON.stringify(data.data)}', '${data.panel}' , '${data.archivedBy}', '${data.openedBy}', '${data.ticketID}', '${data.dateArchived}', '${permUsers}');`, (err, result) => {
+    connection.query(`INSERT INTO transcripts (guild, panel, archivedBy, openedBy, ticketID, dateArchived, users) VALUES ('${guild}', '${data.panel}' , '${data.archivedBy}', '${data.openedBy}', '${data.ticketID}', '${data.dateArchived}', '${permUsers}');`, (err, result) => {
         if (err) throw err;
         res.send(String(result.insertId));
+        connection.query(`UPDATE transcripts SET data = ?`, [JSON.stringify(data.data)], function(err, res) {});
     });
 });
 
