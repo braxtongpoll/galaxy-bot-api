@@ -123,12 +123,13 @@ app.post("/uploadTicket/:guild", async function(req, res) {
     if (auth !== "0cor1A1EIZbMXIRMwyjnLXJ-fUaICv2U") return res.send(false);
     let guild = req.params.guild.replace("'", "''");
     let data = req?.query?.data;
+    let questions = req?.query?.questions;
     if (!guild || !data) return res.send(false);
     data = JSON.parse(data, "utf-8");
     let permUsers = req.query.permUsers || "";
     connection.query(`INSERT INTO tickets (guild, panel, claimedBy, closedBy, openedBy, openerId, dateClosed, ticketID, users) VALUES ('${guild}', '${data.panel}' , '${data.claimedBy}', '${data.closedBy}', '${data.openedBy}', '${data.openerId}', '${data.dateClosed}', '${data.ticketID}', '${permUsers}');`, (err, result) => {
         res.send(String(result.insertId));
-        connection.query(`UPDATE tickets SET data = ? WHERE id = ${result.insertId}`, [JSON.stringify(data.data)], function(err, res) {});
+        connection.query(`UPDATE tickets SET data = ?, questions = ? WHERE id = ${result.insertId}`, [JSON.stringify(data.data), JSON.stringify(questions)], function(err, res) {if (err) console.log(err.stack)});
     });
 });
 
@@ -137,7 +138,7 @@ app.get("/ticket/:id", async function(req, res) {
     if(!id) return res.send(false);
     if(req.isAuthenticated()) {
         connection.query(`SELECT * FROM tickets WHERE id = ${Number(id)};`, function(err, result) {
-            connection.query(`SELECT * FROM users;`, function(err, foundUsers) {
+            connection.query(`SELECT * FROM users;`, async function(err, foundUsers) {
                 if(!result[0].users.split(',').includes(req.user.id)) return res.redirect(`https://plutos.world/error?err=You don't have access to view this page.`)
                 result[0].data = JSON.parse(result[0].data, "utf-8");
                 let userData = {};
@@ -148,7 +149,9 @@ app.get("/ticket/:id", async function(req, res) {
                         iconURL: user.icon
                     };
                 };
-                if (result.length) res.render("viewticket", { data: result[0], config: config, users: userData });
+                let questions = []
+                if (result[0].questions !== null) questions = JSON.parse(result[0].questions, "utf-8");
+                if (result.length) res.render("viewticket", { data: result[0], config: config, users: userData, questions: questions });
             });
         });
     } else {

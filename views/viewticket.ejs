@@ -25,6 +25,16 @@
     <span><span style="color: #3398DB">Opener Tag</span>: <code><%= data.openedBy %></code></span><br />
     <span><span style="color: #3398DB">Opener ID</span>: <code><%= data.openerId %></code></span><br />
     <span><span style="color: #3398DB">Date Closed</span>: <code><%= data.dateClosed %></code></span>
+    <% if (questions?.length) { %>
+        <br /><br />
+        <strong><span style="color: #f1c40d">Ticket Questions:</span></strong><br />
+        <span style="color: #3398DB">Author</span>: <code><%= data.openedBy %></code></span><br /><br />
+        <% for (let data of questions) { %>
+            <% data = JSON.parse(data, "utf-8") %>
+            <strong><span style="color: #F5F5F5; font-size: 1.1em;"><%= data.q %></span></strong><br />
+            <strong><span style="color: #F5F5F5; font-size: 1em"><code><%= data.a %></code></span></strong><br />
+        <% } %>
+    <% } %>
 </p><hr id="divider02">
 <% data.data.forEach(msg => { %>
     <% let messages = msg.message.split("/br"); %>

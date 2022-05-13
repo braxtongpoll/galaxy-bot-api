@@ -17,6 +17,7 @@ CREATE TABLE tickets(
     dateClosed TEXT,
     ticketID BIGINT,
     users TEXT,
+    questions TEXT,
 PRIMARY KEY (id));
 
 CREATE TABLE transcripts(
