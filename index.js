@@ -150,7 +150,7 @@ app.get("/ticket/:id", async function(req, res) {
                     };
                 };
                 let questions = []
-                if (result[0].questions !== null) questions = JSON.parse(result[0].questions, "utf-8");
+                if (result[0].questions != null) questions = JSON.parse(result[0].questions);
                 if (result.length) res.render("viewticket", { data: result[0], config: config, users: userData, questions: questions });
             });
         });
