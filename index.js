@@ -129,7 +129,7 @@ app.post("/uploadTicket/:guild", async function(req, res) {
     let permUsers = req.query.permUsers || "";
     connection.query(`INSERT INTO tickets (guild, panel, claimedBy, closedBy, openedBy, openerId, dateClosed, ticketID, users) VALUES ('${guild}', '${data.panel}' , '${data.claimedBy}', '${data.closedBy}', '${data.openedBy}', '${data.openerId}', '${data.dateClosed}', '${data.ticketID}', '${permUsers}');`, (err, result) => {
         res.send(String(result.insertId));
-        connection.query(`UPDATE tickets SET data = ?, questions = ? WHERE id = ${result.insertId}`, [JSON.stringify(data.data), JSON.stringify(questions)], function(err, res) {if (err) console.log(err.stack)});
+        connection.query(`UPDATE tickets SET data = ?, questions = ? WHERE id = ${result.insertId}`, [JSON.stringify(data.data), JSON.stringify(questions)], function(err, res) {});
     });
 });
 
@@ -151,6 +151,17 @@ app.get("/ticket/:id", async function(req, res) {
                 };
                 let questions = []
                 if (result[0].questions != null) questions = JSON.parse(result[0].questions);
+                for (let i = 0; i < result[0].data.length; i++) {
+                    if (result[0].data[i].message.startsWith("```") && result[0].data[i].message.endsWith("```")) {
+                        if (result[0].data[i].message.startsWith("```/br")) {
+                            let array = result[0].data[i].message.split("/br");
+                            result[0].data[i].message = result[0].data[i].message.replaceAll("```", "");
+                            result[0].data[i].message = `<code> ${array[1]}`;
+                        } else {
+                            
+                        }
+                    };
+                };
                 if (result.length) res.render("viewticket", { data: result[0], config: config, users: userData, questions: questions });
             });
         });
@@ -283,6 +294,52 @@ app.post("/sendUsers", async function(req, res) {
                 }
             }
         });
+    };
+});
+
+app.post(`/uploadmail/:guild`, async function(req, res) {
+    let guild = req.params.guild;
+    let openedBy = req.query.openedBy;
+    let closedBy = req.query.closedBy;
+    let messages = req.query.messages
+    let permUsers = req.query.permUsers;
+    connection.query(`INSERT INTO mail (openedBy, closedBy, messages, users, guild) VALUES ('${openedBy}', '${closedBy}', '${messages}', '${permUsers}', '${guild}');`, function(err, result) {
+        res.send(String(result.insertId));
+    });
+});
+
+app.get("/mail/:id", async function(req, res) {
+    let id = req.params.id;
+    if(req.isAuthenticated()) {
+        connection.query(`SELECT * FROM mail WHERE id = ${Number(id)};`, function(err, result) {
+            if(!result[0].users.split(',').includes(req.user.id)) return res.redirect(`https://plutos.world/error?err=You don't have access to view this page.`)
+            let messages = JSON.parse(result[0].messages);
+            connection.query(`SELECT * FROM users;`, async function(err, users) {
+                let userData = {};
+                for (let user of users) {
+                    userData[user.user] = {
+                        username: user.username,
+                        tag: user.tag,
+                        iconURL: user.icon
+                    };
+                };
+                for (let i = 0; i < messages.length; i++) {
+                    if (messages[i].message.startsWith("```") && messages[i].message.endsWith("```")) {
+                        if (messages[i].message.startsWith("```/br")) {
+                            let array = messages[i].message.split("/br");
+                            messages[i].message = messages[i].message.replaceAll("```", "");
+                            messages[i].message = `<code> ${array[1]}`;
+                        } else {
+                            
+                        }
+                    };
+                };
+                if (result.length) res.render("viewmail", { data: result[0], config: config, users: userData, messages: messages });
+            });
+        });
+    } else {
+        req.session.loginRef = req.path;
+        res.redirect('/auth/discord');
     };
 });
 

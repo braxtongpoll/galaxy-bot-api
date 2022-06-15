@@ -43,6 +43,11 @@
     </h2>
     <% messages.forEach(message => { %>
         <p id="text02" style="margin-left: 5.4em;"><%= message %></p><hr id="divider02">
+        <% if (message.startsWith("<code>")) { %>
+            <p id="text02" style="margin-left: 5.4em;"><code><%= message.replace("<code> ", "") %></code></p><hr id="divider02">
+        <% } else { %>
+            <p id="text02" style="margin-left: 5.4em;"><%= message %></p><hr id="divider02">
+        <% } %>
     <% }) %>
 <% }) %>
 
