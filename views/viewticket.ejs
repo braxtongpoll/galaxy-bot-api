@@ -30,7 +30,7 @@
         <strong><span style="color: #f1c40d">Ticket Questions:</span></strong><br />
         <span style="color: #3398DB">Author</span>: <code><%= data.openedBy %></code></span><br /><br />
         <% for (let data of questions) { %>
-            <% data = JSON.parse(data, "utf-8") %>
+            <% if (typeof data == "string") data = JSON.parse(data, "utf-8") %>
             <strong><span style="color: #F5F5F5; font-size: 1.1em;"><%= data.q %></span></strong><br />
             <strong><span style="color: #F5F5F5; font-size: 1em"><code><%= data.a %></code></span></strong><br />
         <% } %>
@@ -42,7 +42,6 @@
         <img style="width: 2.8em; height: 2.8em; display: inline-block; margin-right: 1em; border-radius: 50%; vertical-align: middle;" src=<%= users[msg.author].iconURL %>><span style="font-size: .9em;"><%= users[msg.author].username %> (<code style="font-size: .65em; vertical-align: middle;"><%= msg.author %></code>)</span>
     </h2>
     <% messages.forEach(message => { %>
-        <p id="text02" style="margin-left: 5.4em;"><%= message %></p><hr id="divider02">
         <% if (message.startsWith("<code>")) { %>
             <p id="text02" style="margin-left: 5.4em;"><code><%= message.replace("<code> ", "") %></code></p><hr id="divider02">
         <% } else { %>

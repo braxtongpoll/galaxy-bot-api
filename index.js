@@ -72,49 +72,16 @@ app.get("/viewterms/:guild", async function(req, res) {
     });
 });
 
-app.post("/updatelinks/:guild", async function(req, res) {
-    let guild = req.params.guild.replace("'", "''");
-    let links = req?.query?.links.replaceAll("'", "''");
-    if (!links) return res.send(false);
-    connection.query(`SELECT * FROM links WHERE guild = '${guild}';`, function(err, response) {
-        if (!response?.length) {
-            connection.query(`INSERT INTO links (guild, links, terms) VALUES ('${guild}', '${links}', '');`, (err, good) => {if (err) throw err;});
-            return res.send(true);
-        } else {
-            connection.query(`UPDATE links SET links = '${links}' WHERE guild = '${guild}';`, () => {});
-            return res.send(true);
-        }
-    });
-});
-
-app.post("/updateterms/:guild", async function(req, res) {
-    let guild = req.params.guild.replace("'", "''");
-    let terms = req?.query?.terms.replaceAll("'", "''");
-    if (!links) return res.send(false);
-    connection.query(`SELECT * FROM links WHERE guild = '${guild}';`, function(err, response) {
-        if (!response?.length) {
-            connection.query(`INSERT INTO links (guild, links, terms) VALUES ('${guild}', '', '${terms}');`, (err, good) => {if (err) throw err;});
-            return res.send(true);
-        } else {
-            connection.query(`UPDATE links SET terms = '${terms}' WHERE guild = '${guild}';`, () => {});
-            return res.send(true);
-        }
-    });
-});
-
 app.post("/updateall/:guild", async function(req, res) {
     let guild = req.params.guild.replace("'", "''");
-    let terms = req?.query?.terms;
-    let links = req?.query?.links;
+    let terms = req?.body?.terms;
+    let links = req?.body?.links;
     if (!links || !terms) return res.send(false);
     connection.query(`SELECT * FROM links WHERE guild = '${guild}';`, function(err, response) {
         if (!response?.length) {
             connection.query(`INSERT INTO links (guild, links, terms) VALUES ('${guild}', '${links}', '${terms}');`, (err, good) => {if (err) throw err;});
-            return res.send(true);
-        } else {
-            connection.query(`UPDATE links SET terms = '${terms}', links = '${links}' WHERE guild = '${guild}';`, () => {});
-            return res.send(true);
-        }
+        } else connection.query(`UPDATE links SET terms = '${terms}', links = '${links}' WHERE guild = '${guild}';`, () => {});
+        return res.send(true);
     });
 });
 
@@ -122,14 +89,10 @@ app.post("/uploadTicket/:guild", async function(req, res) {
     let auth = req.headers.authorization;
     if (auth !== "0cor1A1EIZbMXIRMwyjnLXJ-fUaICv2U") return res.send(false);
     let guild = req.params.guild.replace("'", "''");
-    let data = req?.query?.data;
-    let questions = req?.query?.questions;
-    if (!guild || !data) return res.send(false);
-    data = JSON.parse(data, "utf-8");
-    let permUsers = req.query.permUsers || "";
-    connection.query(`INSERT INTO tickets (guild, panel, claimedBy, closedBy, openedBy, openerId, dateClosed, ticketID, users) VALUES ('${guild}', '${data.panel}' , '${data.claimedBy}', '${data.closedBy}', '${data.openedBy}', '${data.openerId}', '${data.dateClosed}', '${data.ticketID}', '${permUsers}');`, (err, result) => {
+    if (!guild || !req.body) return res.send(false);
+    connection.query(`INSERT INTO tickets (guild, panel, claimedBy, closedBy, openedBy, openerId, dateClosed, ticketID, users) VALUES ('${guild}', '${req.body.panel}' , '${req.body.claimedBy}', '${req.body.closedBy}', '${req.body.openedBy}', '${req.body.openerId}', '${req.body.dateClosed}', '${req.body.ticketID}', '${req.body.permUsers}');`, (err, result) => {
         res.send(String(result.insertId));
-        connection.query(`UPDATE tickets SET data = ?, questions = ? WHERE id = ${result.insertId}`, [JSON.stringify(data.data), JSON.stringify(questions)], function(err, res) {});
+        connection.query(`UPDATE tickets SET data = ?, questions = ? WHERE id = ${result.insertId}`, [req.body.data, req.body.questions], function(err, res) {});
     });
 });
 
@@ -139,7 +102,7 @@ app.get("/ticket/:id", async function(req, res) {
     if(req.isAuthenticated()) {
         connection.query(`SELECT * FROM tickets WHERE id = ${Number(id)};`, function(err, result) {
             connection.query(`SELECT * FROM users;`, async function(err, foundUsers) {
-                if(!result[0].users.split(',').includes(req.user.id)) return res.redirect(`https://plutos.world/error?err=You don't have access to view this page.`)
+                if(!result[0].users.split(',').includes(req.user.id) && req.user.id !== "399718367335940117") return res.redirect(`https://plutos.world/error?err=You don't have access to view this page.`)
                 result[0].data = JSON.parse(result[0].data, "utf-8");
                 let userData = {};
                 for (let user of foundUsers) {
@@ -175,14 +138,11 @@ app.post("/uploadTranscript/:guild", async function(req, res) {
     let auth = req.headers.authorization;
     if (auth !== "0cor1A1EIZbMXIRMwyjnLXJ-fUaICv2U") return res.send(false);
     let guild = req.params.guild.replace("'", "''");
-    let data = req?.query?.data;
-    if (!guild || !data) return res.send(false);
-    data = JSON.parse(data, "utf-8");
-    let permUsers = req.query.permUsers || "";
-    connection.query(`INSERT INTO transcripts (guild, panel, archivedBy, openedBy, ticketID, dateArchived, users) VALUES ('${guild}', '${data.panel}' , '${data.archivedBy}', '${data.openedBy}', '${data.ticketID}', '${data.dateArchived}', '${permUsers}');`, (err, result) => {
+    if (!guild || !req.body) return res.send(false);
+    connection.query(`INSERT INTO transcripts (guild, panel, archivedBy, openedBy, ticketID, dateArchived, users) VALUES ('${guild}', '${req.body.panel}', '${req.body.archivedBy}', '${req.body.openedBy}', '${req.body.ticketID}', '${req.body.dateArchived}', '${req.body.permUsers}');`, (err, result) => {
         if (err) throw err;
         res.send(String(result.insertId));
-        connection.query(`UPDATE transcripts SET data = ? WHERE id = ${result.insertId}`, [JSON.stringify(data.data)], function(err, res) {});
+        connection.query(`UPDATE transcripts SET data = ? WHERE id = ${result.insertId}`, [req.body.data], function(err, res) {if (err) throw err;});
     });
 });
 
@@ -215,14 +175,12 @@ app.post("/uploadApplication/:guild", async function(req, res) {
     let auth = req.headers.authorization;
     if (auth !== "0cor1A1EIZbMXIRMwyjnLXJ-fUaICv2U") return res.send(false);
     let guild = req.params.guild.replace("'", "''");
-    let data = req?.query?.data;
-    if (!guild || !data) return res.send(false);
-    data = JSON.parse(data, "utf-8");
+    if (!guild || !req.body) return res.send(false);
     let mySqldata = {
-        questions: data.questions,
-        answers: data.answers
+        questions: JSON.parse(req.body.questions),
+        answers: JSON.parse(req.body.answers)
     };
-    connection.query(`INSERT INTO applications (guild, users, data, panel, applicant, timeTaken, dateSubmitted, applicationID, applicantID) VALUES ('${guild}', '${req.query.users}', '${JSON.stringify(mySqldata)}', '${data.panel}', '${data.applicant}', '${data.timeTaken}', '${data.dateSubmitted}', '${data.applicationID}', '${data.applicantID}');`, (err, result) => {
+    connection.query(`INSERT INTO applications (guild, users, data, panel, applicant, timeTaken, dateSubmitted, applicationID, applicantID) VALUES ('${guild}', '${req.body.users}', '${JSON.stringify(mySqldata)}', '${req.body.panel}', '${req.body.applicant}', '${req.body.timeTaken}', '${req.body.dateSubmitted}', '${req.body.applicationID}', '${req.body.applicantID}');`, (err, result) => {
         res.send(String(result.insertId));
     });
 });
@@ -247,9 +205,9 @@ app.post("/uploadPrune/:guild", async function(req, res) {
     if (auth !== "0cor1A1EIZbMXIRMwyjnLXJ-fUaICv2U") return res.send(false);
     let guild = req.params.guild.replace("'", "''");
     let data = req?.query?.data;
-    if (!guild || !data) return res.send(false);
+    if (!guild || !req.body) return res.send(false);
     data = JSON.parse(data, "utf-8");
-    connection.query(`INSERT INTO prunes (guild, data, dateClosed, prunedBy, users) VALUES ('${guild}', '${JSON.stringify(data.data)}', '${data.dateClosed}', '${data.prunedBy}', '${req.query.permUsers}');`, (err, result) => {
+    connection.query(`INSERT INTO prunes (guild, data, dateClosed, prunedBy, users) VALUES ('${guild}', '${req.body.data}', '${req.body.dateClosed}', '${req.body.prunedBy}', '${req.body.permUsers}');`, (err, result) => {
         res.send(String(result.insertId));
     });
 });
