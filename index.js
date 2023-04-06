@@ -30,6 +30,7 @@ function loop() {
     connection.ping();
     setTimeout(() => loop(), 60000 * 30);
 };
+loop()
 
 // Discord Login
 passport.serializeUser(function(user, done) {
